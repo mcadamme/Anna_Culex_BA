@@ -13,7 +13,7 @@ boot.fn <- function(x, N=5000) {
 }
 
 #Loading libraries
-library(ggplot2)
+library(ggplot2); library(lme4); library(lmtest)
 
 #Loading datasets
 
@@ -22,6 +22,9 @@ full_ba_set <- read.csv("~/Desktop/Anna_Culex_BA/data/hostchoice7data2018.csv")#
 
 head(full_ba_set)
 tail(full_ba_set)
+
+#getting set up for chick as random effect
+full_ba_set$chick <- paste(full_ba_set$chick.color,full_ba_set$chick.no)
 
 #subset - only data from responding females - taking out NA values, 
 #manually changed data set - to get only responders
@@ -71,7 +74,20 @@ upper_CI_chick
 strain_names <- c("cal1", "cal1_2w", "cal2", "chi", "eva", "lau", "mol_ca", "new", "nor")
 strain_order <- c(1,2,3,6,7,8,4,5,9)
 
-plotting_dataset <- cbind(strain_names,strain_order,obs_t1_chick,obs_t1_human, upper_CI_chick, upper_CI_hum) 
+plotting_dataset <- cbind(strain_names,strain_order,obs_t1_chick,obs_t1_human, 
+                          upper_CI_chick, upper_CI_hum) 
 
-write.csv(plotting_dataset, file = "~/Desktop/Anna_Culex_BA/data/forplotting.csv")
+#write.csv(plotting_dataset, file = "~/Desktop/Anna_Culex_BA/data/forplotting.csv")
 
+
+#Basic statistical model for Day 1 responses
+
+#model_full <- glmer(host_hum ~ 1 + strain + (1|chick), data = day1_data_resp_only, family = binomial)
+
+model_full <- glm(host_hum ~ 1 + strain, data = day1_data_resp_only, 
+                    family = binomial)
+
+model_red1 <- glm(host_hum ~ 1, data = day1_data_resp_only, 
+                  family = binomial)
+
+lrtest(model_red1, model_full)#this gives df, chisq test value and p-val
